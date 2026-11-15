@@ -51,6 +51,7 @@ Spec  ->  Structurer -> Researcher -> Builder -> Critic -> Verification -> Judge
 - Validate on the full dataset, not just a sample, when cost allows.
 - Irreversible actions (deleting data, publishing, spending money, contacting third parties) stop that workstream and wait for the human.
 - Nothing invented: every data point and reference needs a verified source.
+- Only the human decides whether the project continues. Any agent, at any stage, can raise a **continuity alert** (evidence, cost so far, options, recommendation, and what would change its mind); the affected workstream pauses until the human answers, and nothing is discarded.
 
 ## Modes
 
