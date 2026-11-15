@@ -19,80 +19,80 @@ The method is identical across versions; only the execution layer changes. Where
 
 ## How it works
 
-The flowcharts below are in Portuguese, like the skill itself. Sources (`.mmd`) and PNG versions are in [`docs/`](docs/).
+Mermaid sources (`.mmd`) and PNG versions of these flowcharts are in [`docs/`](docs/). File names shown (`ESPEC.md`, `DECISOES.md`, `LIVRE`) are the actual Portuguese names the skill uses.
 
 ### 1. Evolution round (one task)
 
 ```mermaid
 flowchart TD
-    START(["usa a arquitetura de agentes"]) --> MODO{Modo}
-    MODO -->|"Avaliar / Conduzir"| ESPEC
-    MODO -->|Assumir| A["Fase A · Ler o que já existe<br/>sem refazer nem sobrescrever"] --> ESPEC
-    ESPEC["Fase 0 · ESPEC<br/>objetivo, gabarito, critérios do juiz, portões,<br/>limites e critérios de parada aprovados por você"] --> EST
+    START(["use the agent architecture"]) --> MODE{Mode}
+    MODE -->|"Evaluate / Run"| SPEC
+    MODE -->|Take over| A["Phase A · Read what already exists<br/>no redoing, no overwriting"] --> SPEC
+    SPEC["Phase 0 · SPEC<br/>goal, ground truth, judge criteria, gates,<br/>limits and stop criteria approved by you"] --> STR
 
-    subgraph R["Fase 1 · Rodada de evolução (uma tarefa)"]
-        EST["Estruturador · V0 + hipóteses"] --> PES["Pesquisador · evidência com fonte"]
-        PES --> CON["Construtor · nova versão + testes"]
-        CON --> CRI["Crítico · falhas testáveis"]
-        CRI --> VER["Verificação · só críticas confirmadas"]
-        VER --> JUI["Juiz · régua 0 a 4, nota calculada em código"]
-        JUI --> FIS{"Fiscal isolado<br/>só vê ESPEC + entrega"}
+    subgraph R["Phase 1 · Evolution round (one task)"]
+        STR["Structurer · V0 + hypotheses"] --> RES["Researcher · sourced evidence"]
+        RES --> BLD["Builder · new version + tests"]
+        BLD --> CRI["Critic · testable flaws"]
+        CRI --> VER["Verification · confirmed critiques only"]
+        VER --> JDG["Judge · 0–4 rubric, score computed in code"]
+        JDG --> REV{"Isolated reviewer<br/>sees only SPEC + delivery"}
     end
 
-    FIS -->|"reprovado, até 3x"| CON
-    FIS -->|aprovado| ARB{"Árbitro<br/>portão da tarefa"}
-    ARB -->|REFAZER| CON
-    ARB -->|TESTAR| EXP["Experimento real"]
-    EXP --> PES
-    ARB -->|APROVAR| INT["Integra no principal<br/>STATUS: tarefa aprovada"]
-    INT --> FIM{"Critério de<br/>término atingido?"}
-    FIM -->|"não: próxima tarefa"| PES
-    FIM -->|sim| F3["Fase 3 · Revisão final independente<br/>pausa as execuções agendadas"]
+    REV -->|"rejected, up to 3x"| BLD
+    REV -->|approved| ARB{"Arbiter<br/>task gate"}
+    ARB -->|REDO| BLD
+    ARB -->|TEST| EXP["Real-world experiment"]
+    EXP --> RES
+    ARB -->|APPROVE| INT["Merge into main<br/>STATUS: task approved"]
+    INT --> END{"Stop condition<br/>reached?"}
+    END -->|"no: next task"| RES
+    END -->|yes| F3["Phase 3 · Independent final review<br/>scheduled runs paused"]
 ```
 
 ### 2. Continuity alert: agents recommend, only the human decides
 
 ```mermaid
 flowchart TD
-    QUALQ["Qualquer agente, em qualquer etapa<br/>pesquisa, código, crítica, juiz, fiscal,<br/>árbitro, relatório, revisão semanal"] -->|"percebe que pode não valer a pena"| AL["Alerta de continuidade<br/>o que viu, evidências com fonte, custo até agora,<br/>opções, recomendação e o que mudaria a opinião"]
-    AL --> PAU["Pausa só a frente afetada<br/>nada é apagado, as outras seguem"]
-    PAU --> USU{"Você decide"}
-    USU -->|continuar| VOLTA["Trava volta a LIVRE"]
-    USU -->|ajustar escopo| ESPEC["Atualiza a ESPEC"]
-    USU -->|pivotar| ESPEC
-    USU -->|pausar| PAUSADO["Fica pausado até você mandar retomar"]
-    USU -->|encerrar| F3["Fase 3 · Revisão final"]
-    VOLTA --> REG["Decisão e motivo em DECISOES.md"]
-    ESPEC --> REG
-    PAUSADO --> REG
-    F3 --> REG
+    ANY["Any agent, at any stage<br/>research, code, critique, judge, reviewer,<br/>arbiter, daily report, weekly review"] -->|"sees it may not be worth it"| AL["Continuity alert<br/>what it saw, sourced evidence, cost so far,<br/>options, recommendation, what would change its mind"]
+    AL --> PAU["Pauses only the affected workstream<br/>nothing deleted, others keep running"]
+    PAU --> USR{"You decide"}
+    USR -->|continue| BACK["Lock set back to LIVRE (free)"]
+    USR -->|adjust scope| SPEC["SPEC updated (ESPEC.md)"]
+    USR -->|pivot| SPEC
+    USR -->|pause| PAUSED["Stays paused until you resume it"]
+    USR -->|stop| F3["Phase 3 · Final review"]
+    BACK --> LOG["Decision and reason in DECISOES.md"]
+    SPEC --> LOG
+    PAUSED --> LOG
+    F3 --> LOG
 ```
 
 ### 3. Parallel execution
 
 ```mermaid
 flowchart LR
-    subgraph AG["Execuções agendadas"]
-        FA["Frente A<br/>a cada hora"]
-        FB["Frente B<br/>a cada hora"]
-        FC["Frente C<br/>a cada hora"]
-        VIG["Vigia<br/>várias vezes por hora<br/>(versão Claude)"]
-        REL["Relatório diário"]
-        REV["Revisão de continuidade<br/>semanal"]
+    subgraph AG["Scheduled runs"]
+        FA["Workstream A<br/>hourly"]
+        FB["Workstream B<br/>hourly"]
+        FC["Workstream C<br/>hourly"]
+        WD["Watchdog<br/>several times an hour<br/>(Claude version)"]
+        REP["Daily report"]
+        REVW["Weekly continuity review"]
     end
 
-    subgraph REPO["Repositório privado do projeto"]
-        ARQ["ESPEC · STATUS · DECISOES<br/>ALERTA_CONTINUIDADE · ABLACAO<br/>uma trava por frente"]
+    subgraph REPO["Private project repository"]
+        FILES["spec, status, decisions,<br/>continuity alerts, ablation table<br/>one lock per workstream"]
     end
 
-    FA -->|"trava + sinal de vida a cada 10 min"| ARQ
-    FB -->|"trabalha no próprio ramo"| ARQ
-    FC -->|"espera etapa aprovada de outra frente"| ARQ
-    VIG -->|"trava parada há mais de 20 min:<br/>libera e dispara a frente de novo"| FA
-    ARQ -->|"pendências e alertas"| VOCE(["Você"])
-    REL -->|"progresso, notas, decisões do árbitro"| VOCE
-    REV -->|"abre alerta se houver motivo"| VOCE
-    VOCE -->|"suas decisões valem sobre o árbitro"| ARQ
+    FA -->|"lock + heartbeat every 10 min"| FILES
+    FB -->|"works on its own branch"| FILES
+    FC -->|"waits for another workstream's approved step"| FILES
+    WD -->|"lock stale for 20+ min:<br/>frees it and re-fires the workstream"| FA
+    FILES -->|"pending decisions and alerts"| YOU(["You"])
+    REP -->|"progress, scores, arbiter decisions"| YOU
+    REVW -->|"raises an alert if there is a reason"| YOU
+    YOU -->|"your decisions override the arbiter"| FILES
 ```
 
 

@@ -1,0 +1,24 @@
+flowchart TD
+    START(["use the agent architecture"]) --> MODE{Mode}
+    MODE -->|"Evaluate / Run"| SPEC
+    MODE -->|Take over| A["Phase A · Read what already exists<br/>no redoing, no overwriting"] --> SPEC
+    SPEC["Phase 0 · SPEC<br/>goal, ground truth, judge criteria, gates,<br/>limits and stop criteria approved by you"] --> STR
+
+    subgraph R["Phase 1 · Evolution round (one task)"]
+        STR["Structurer · V0 + hypotheses"] --> RES["Researcher · sourced evidence"]
+        RES --> BLD["Builder · new version + tests"]
+        BLD --> CRI["Critic · testable flaws"]
+        CRI --> VER["Verification · confirmed critiques only"]
+        VER --> JDG["Judge · 0–4 rubric, score computed in code"]
+        JDG --> REV{"Isolated reviewer<br/>sees only SPEC + delivery"}
+    end
+
+    REV -->|"rejected, up to 3x"| BLD
+    REV -->|approved| ARB{"Arbiter<br/>task gate"}
+    ARB -->|REDO| BLD
+    ARB -->|TEST| EXP["Real-world experiment"]
+    EXP --> RES
+    ARB -->|APPROVE| INT["Merge into main<br/>STATUS: task approved"]
+    INT --> END{"Stop condition<br/>reached?"}
+    END -->|"no: next task"| RES
+    END -->|yes| F3["Phase 3 · Independent final review<br/>scheduled runs paused"]

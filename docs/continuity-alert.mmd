@@ -1,0 +1,13 @@
+flowchart TD
+    ANY["Any agent, at any stage<br/>research, code, critique, judge, reviewer,<br/>arbiter, daily report, weekly review"] -->|"sees it may not be worth it"| AL["Continuity alert<br/>what it saw, sourced evidence, cost so far,<br/>options, recommendation, what would change its mind"]
+    AL --> PAU["Pauses only the affected workstream<br/>nothing deleted, others keep running"]
+    PAU --> USR{"You decide"}
+    USR -->|continue| BACK["Lock set back to LIVRE (free)"]
+    USR -->|adjust scope| SPEC["SPEC updated (ESPEC.md)"]
+    USR -->|pivot| SPEC
+    USR -->|pause| PAUSED["Stays paused until you resume it"]
+    USR -->|stop| F3["Phase 3 · Final review"]
+    BACK --> LOG["Decision and reason in DECISOES.md"]
+    SPEC --> LOG
+    PAUSED --> LOG
+    F3 --> LOG

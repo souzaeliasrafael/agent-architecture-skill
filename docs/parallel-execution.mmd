@@ -1,0 +1,22 @@
+flowchart LR
+    subgraph AG["Scheduled runs"]
+        FA["Workstream A<br/>hourly"]
+        FB["Workstream B<br/>hourly"]
+        FC["Workstream C<br/>hourly"]
+        WD["Watchdog<br/>several times an hour<br/>(Claude version)"]
+        REP["Daily report"]
+        REVW["Weekly continuity review"]
+    end
+
+    subgraph REPO["Private project repository"]
+        FILES["spec, status, decisions,<br/>continuity alerts, ablation table<br/>one lock per workstream"]
+    end
+
+    FA -->|"lock + heartbeat every 10 min"| FILES
+    FB -->|"works on its own branch"| FILES
+    FC -->|"waits for another workstream's approved step"| FILES
+    WD -->|"lock stale for 20+ min:<br/>frees it and re-fires the workstream"| FA
+    FILES -->|"pending decisions and alerts"| YOU(["You"])
+    REP -->|"progress, scores, arbiter decisions"| YOU
+    REVW -->|"raises an alert if there is a reason"| YOU
+    YOU -->|"your decisions override the arbiter"| FILES
