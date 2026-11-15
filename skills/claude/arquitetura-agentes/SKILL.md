@@ -28,6 +28,7 @@ Crie `ESPEC.md` com:
 4. **Portões**: em que pontos o árbitro decide seguir, refazer, pivotar ou parar.
 5. **Restrições**: orçamento, prazo, ferramentas proibidas (ex.: sem API paga), o que nunca pode ser alterado.
 6. **Limites**: máximo de rodadas por tarefa (padrão 3, teto 5; até 3 fiscalizações) e **critério de término** do projeto inteiro.
+7. **Critérios de parada**: sinais que indicariam que o projeto não vale a pena (ex.: "se em 4 semanas não houver X"). O agente propõe e o usuário aprova antes de entrarem na ESPEC. Atingir um critério de parada abre um alerta de continuidade; não encerra nada sozinho.
 
 Se faltar informação essencial, pergunte uma vez, de forma objetiva. Sem o usuário presente, use a leitura mais razoável, marque cada suposição como `[SUPOSIÇÃO]` e siga.
 
@@ -54,7 +55,28 @@ Estruturador -> Pesquisador -> Construtor -> Crítico -> Verificação -> Juiz -
   - Cada nota responde às perguntas sim/não da ESPEC, não a impressão geral.
   - Nota final (0 a 100) calculada por código Python, não estimada: média ponderada × 25. Registra confiança (proporção de critérios com nota ≥ 3) e bloqueios (critérios com 0 que impedem aprovação).
 - **Fiscal** (subagente separado, Sonnet, sem acesso ao raciocínio de quem fez): recebe só a ESPEC e a entrega e responde, item a item: cumpre / não cumpre / não verificável, com motivo; confere também se alguma versão anterior foi alterada; salva `relatorios/FISCAL_<tarefa>_<n>.md`. Até 3 fiscalizações; na terceira reprovação, registra o motivo e entrega como "com ressalvas".
-- **Árbitro** (subagente separado, Opus, esforço alto): nos PORTÕES, lê nota, parecer do fiscal e decisões já registradas do usuário e decide `SEGUIR`, `REFAZER`, `TESTAR`, `PIVOTAR`, `APROVAR` ou `DESCARTAR`. Não espera o usuário. Registra o motivo detalhado em `DECISOES_ARBITRO.md` e anota no STATUS "PORTÃO decidido pelo árbitro, aguardando revisão do usuário". Decisões do usuário valem sobre o árbitro. `APROVAR`, `PIVOTAR` e `DESCARTAR` do projeto inteiro são recomendações até o usuário confirmar.
+- **Árbitro** (subagente separado, Opus, esforço alto): nos PORTÕES, lê nota, parecer do fiscal e decisões já registradas do usuário e decide, sobre a tarefa, `SEGUIR`, `REFAZER`, `TESTAR` ou `APROVAR`. Não espera o usuário para isso. Registra o motivo detalhado em `DECISOES_ARBITRO.md` e anota no STATUS "PORTÃO decidido pelo árbitro, aguardando revisão do usuário". Decisões do usuário valem sobre o árbitro. O árbitro **nunca** decide pivotar, pausar ou encerrar o projeto: se achar que é o caso, abre um alerta de continuidade (seção abaixo).
+
+## Alerta de continuidade (qualquer agente, a qualquer momento)
+
+Continuar, pausar, mudar o escopo, pivotar ou encerrar o projeto é **decisão exclusiva do usuário**. Nenhum agente, nem o árbitro, toma essa decisão.
+
+**Quem pode abrir:** qualquer papel, em qualquer etapa (pesquisa, construção, crítica, julgamento, fiscalização, árbitro, relatório), sempre que perceber que o projeto, ou uma frente, pode não valer a pena. Exemplos: a evidência derruba uma hipótese central; aparece um concorrente que já resolve o problema; o custo ou o prazo real ficou muito acima do previsto; o gabarito não existe ou não é confiável; um critério de parada da ESPEC foi atingido; estagnação (três rodadas seguidas com ganho menor que 3 pontos).
+
+**O que o agente faz:**
+1. Registra em `ALERTA_CONTINUIDADE.md` (um bloco por alerta, numerado e datado):
+   - **O que foi percebido** e em que etapa;
+   - **Evidências**, cada uma com fonte e marcada como fato, suposição ou inferência;
+   - **Abrangência**: o projeto inteiro ou só uma frente;
+   - **Custo até agora** e o que ainda falta, com estimativa;
+   - **Opções**: continuar como está, ajustar o escopo, pivotar, pausar ou encerrar, cada uma com prós e contras;
+   - **Recomendação do agente** e o motivo;
+   - **O que mudaria essa recomendação** (qual evidência faria valer a pena continuar).
+2. Copia a pergunta para `PENDENTE_USUARIO.md` e avisa o usuário (resumo na conversa ou notificação), de forma direta: o que foi visto, o que recomenda e o que precisa que ele decida.
+3. **Pausa só o que o alerta atinge**: a frente afetada (ou todas, se o alerta for do projeto inteiro) fica `PAUSADO` na trava, com `quem: aguardando decisão do usuário sobre o alerta <n>`. Nada é apagado nem descartado; as frentes não afetadas seguem.
+4. Retoma só quando o usuário responder. A decisão e o motivo dele vão para `DECISOES.md`, e o alerta é marcado como respondido.
+
+**Revisão de continuidade periódica** (ex.: 1× por semana, numa execução isolada): reavalia o projeto inteiro contra o plano, o custo até agora, o que falta, sinais externos e critérios de parada. Se encontrar motivo, abre um alerta pela regra acima; se não, registra uma linha "sem alerta" com a data no STATUS.
 
 ## Fase 2: execução paralela e agendamento (modos Conduzir e Assumir)
 
@@ -75,7 +97,8 @@ DECISOES.md          decisões do usuário e motivos de cada escolha
 DECISOES_ARBITRO.md  decisões do árbitro com motivo
 ABLACAO.md           tabela de ablação
 relatorios/          relatórios de tarefa e do fiscal
-PENDENTE_USUARIO.md  decisões irreversíveis aguardando o usuário
+PENDENTE_USUARIO.md  decisões irreversíveis e alertas aguardando o usuário
+ALERTA_CONTINUIDADE.md  alertas de continuidade com evidências e recomendação
 ```
 
 No modo Avaliar, os mesmos arquivos ficam na pasta de trabalho, sem os de trava.
@@ -101,14 +124,14 @@ Antes de criar, veja com `list_triggers` o que já existe (deste e de outros pro
 
 1. **Uma tarefa por frente** (Sonnet), recorrente a cada hora, cada frente num minuto diferente para não colidir. Prompt autossuficiente com: repositório, ramo, arquivo de trava, regras da trava (2.3), arquivos a ler, ordem das tarefas da frente, fluxo implementador → testes → relatório → fiscal (até 3) → árbitro nos portões, frase exata de aprovação, regras de convivência e regras permanentes, e quando escrever CONCLUIDO.
 2. **Vigia** (Haiku, tarefa curta e mecânica, várias vezes por hora em minutos intercalados): lê só as travas e o último commit de cada frente. Se uma frente está LIVRE (ou aguardando etapa já aprovada) ou OCUPADA sem sinal há mais de 20 min, libera a trava com um commit `vigia: disparo frente X <hora>` e chama `fire_trigger` na tarefa daquela frente. Não dispara de novo se houve disparo do vigia há menos de 15 min. Termina sem resumo. Converter todos os horários para São Paulo antes de comparar.
-3. **Relatório diário** (Sonnet, 1× por dia em horário combinado, notificação push ligada): progresso por frente, notas e variação, decisões do árbitro para revisar, pendências do usuário. Trata: frente travada (mesma tarefa falhando 3 vezes → marca bloqueada com diagnóstico e avisa) e **estagnação** (três rodadas seguidas com ganho menor que 3 pontos → aciona o árbitro).
+3. **Relatório diário** (Sonnet, 1× por dia em horário combinado, notificação push ligada): progresso por frente, notas e variação, decisões do árbitro para revisar, pendências do usuário. Trata: frente travada (mesma tarefa falhando 3 vezes → marca bloqueada com diagnóstico e avisa) e **estagnação** (três rodadas seguidas com ganho menor que 3 pontos → abre alerta de continuidade). Lista os alertas de continuidade abertos no topo do relatório.
 
 ### 2.5 Confirmação
 Mostre a lista de tarefas agendadas (nome, frente, cadência, modelo, o que faz) e crie quando o usuário confirmar; se ele já disse para seguir direto, crie e informe. Diga em uma frase que configuração de aprovação cada tarefa recebeu; se as execuções forem pedir aprovação, avise que ele pode ativar "Aprovar automaticamente" nas configurações da tarefa.
 
 ## Fase 3: término
 
-Quando o critério de término da ESPEC for atingido, ou o árbitro recomendar `APROVAR`/`DESCARTAR` para o projeto inteiro:
+Quando o critério de término da ESPEC for atingido, ou o usuário decidir encerrar (por exemplo, respondendo a um alerta de continuidade):
 - cada frente escreve CONCLUIDO na trava e o relatório diário gera o relatório final;
 - revisão final com um subagente Fable (recebe ESPEC, versão final, DECISOES, DECISOES_ARBITRO, ABLACAO) e parecer independente salvo em `REVISAO_FINAL.md`;
 - as tarefas agendadas do projeto são **pausadas** (`update_trigger` com enabled falso) e o usuário é avisado; excluir só se ele pedir.
@@ -123,7 +146,8 @@ Quando o critério de término da ESPEC for atingido, ou o árbitro recomendar `
 6. **Decisões irreversíveis** (apagar dados, tornar o repositório público, publicar, gastar dinheiro, enviar algo a terceiros, mudar a ESPEC): preparar, registrar em PENDENTE_USUARIO.md e parar aquela frente; quem decide é o usuário. As outras frentes seguem.
 7. **Nada inventado**: fato, suposição e inferência sempre marcados; dados e referências só com fonte conferida.
 8. **Nenhum segredo no repositório** (chaves, tokens); só pacotes de licença permissiva.
-9. **Pedidos do usuário registrados no STATUS valem sobre o árbitro e sobre o prompt das tarefas.**
+9. **Continuar, pausar, mudar o escopo, pivotar ou encerrar o projeto é decisão só do usuário.** Agentes alertam e recomendam, com motivos e evidências; nunca decidem.
+10. **Pedidos do usuário registrados no STATUS valem sobre o árbitro e sobre o prompt das tarefas.**
 
 ## Modelos e limite de uso
 
@@ -135,4 +159,5 @@ Quando o critério de término da ESPEC for atingido, ou o árbitro recomendar `
 - versão atual, nota e confiança (com variação em relação à rodada anterior);
 - os 3 pontos mais fracos e o que os derrubaria;
 - decisão do árbitro e motivo em uma linha (detalhe em DECISOES_ARBITRO.md);
+- alertas de continuidade abertos, se houver;
 - o que precisa do usuário, se houver.
