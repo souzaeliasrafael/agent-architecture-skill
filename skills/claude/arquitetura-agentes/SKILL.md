@@ -25,7 +25,7 @@ Crie `ESPEC.md` com:
 1. **Objetivo** em uma frase e **tipo de projeto** (ideia de negócio, pesquisa/artigo, software, análise de dados, outro).
 2. **Gabarito**: contra o que o resultado é medido (base oficial, métrica, cliente real, teste). Se não existir, escreva isso explicitamente.
 3. **Critérios do Juiz**: de 6 a 12 da lista abaixo, mais os específicos do projeto, cada um com perguntas sim/não.
-4. **Portões**: em que pontos o árbitro decide seguir, refazer, pivotar ou parar.
+4. **Portões**: em que pontos o árbitro decide seguir, refazer, testar ou aprovar uma tarefa.
 5. **Restrições**: orçamento, prazo, ferramentas proibidas (ex.: sem API paga), o que nunca pode ser alterado.
 6. **Limites**: máximo de rodadas por tarefa (padrão 3, teto 5; até 3 fiscalizações) e **critério de término** do projeto inteiro.
 7. **Critérios de parada**: sinais que indicariam que o projeto não vale a pena (ex.: "se em 4 semanas não houver X"). O agente propõe e o usuário aprova antes de entrarem na ESPEC. Atingir um critério de parada abre um alerta de continuidade; não encerra nada sozinho.
@@ -74,7 +74,7 @@ Continuar, pausar, mudar o escopo, pivotar ou encerrar o projeto é **decisão e
    - **O que mudaria essa recomendação** (qual evidência faria valer a pena continuar).
 2. Copia a pergunta para `PENDENTE_USUARIO.md` e avisa o usuário (resumo na conversa ou notificação), de forma direta: o que foi visto, o que recomenda e o que precisa que ele decida.
 3. **Pausa só o que o alerta atinge**: a frente afetada (ou todas, se o alerta for do projeto inteiro) fica `PAUSADO` na trava, com `quem: aguardando decisão do usuário sobre o alerta <n>`. Nada é apagado nem descartado; as frentes não afetadas seguem.
-4. Retoma só quando o usuário responder. A decisão e o motivo dele vão para `DECISOES.md`, e o alerta é marcado como respondido.
+4. Retoma só quando o usuário responder (na conversa ou registrando a resposta no STATUS): a decisão e o motivo dele vão para `DECISOES.md`, o alerta é marcado como respondido e a trava volta a `LIVRE` se ele mandou continuar.
 
 **Revisão de continuidade periódica** (ex.: 1× por semana, numa execução isolada): reavalia o projeto inteiro contra o plano, o custo até agora, o que falta, sinais externos e critérios de parada. Se encontrar motivo, abre um alerta pela regra acima; se não, registra uma linha "sem alerta" com a data no STATUS.
 
@@ -151,7 +151,7 @@ Quando o critério de término da ESPEC for atingido, ou o usuário decidir ence
 
 ## Modelos e limite de uso
 
-- Frentes, fiscal e relatório: Sonnet. Árbitro: Opus, esforço alto. Vigia: Haiku. Revisão final: Fable (só quando o árbitro recomendar APROVAR, ou quando o usuário pedir).
+- Frentes, fiscal e relatório: Sonnet. Árbitro: Opus, esforço alto. Vigia: Haiku. Revisão final: Fable (só no término, ou quando o usuário pedir).
 - Ajustar o número de frentes e a cadência ao limite semanal, considerando as tarefas agendadas de outros projetos. Se o relatório perceber que o ritmo vai estourar, reduz a frequência (`update_trigger`) e avisa.
 
 ## Saída ao fim de cada tarefa (e no relatório diário)
