@@ -124,12 +124,6 @@ flowchart LR
 - Nothing invented: every data point and reference needs a verified source.
 - Only the human decides whether the project continues. Any agent, at any stage, can raise a **continuity alert** (evidence, cost so far, options, recommendation, and what would change its mind); the affected workstream pauses until the human answers, and nothing is discarded.
 
-## Modes
-
-- **Evaluate** — runs the evaluation rounds in a single conversation.
-- **Run** — creates scheduled tasks that develop and monitor the project until the stop condition.
-- **Take over** — adopts a project already in progress without redoing or overwriting anything.
-
 ## Installation
 
 Pick the folder for your platform and install it as a skill, then say *"usa a arquitetura de agentes"*.
@@ -141,6 +135,59 @@ Pick the folder for your platform and install it as a skill, then say *"usa a ar
 - **Grok:** create a custom skill from `skills/grok/arquitetura-agentes`.
 
 Skill availability depends on each platform's plan and rollout.
+
+## How to use
+
+Install the skill once (see [Installation](#installation)). After that, start any conversation by asking for the agent architecture and describing the project. The skill is written in Portuguese, so the trigger phrase is *"usa a arquitetura de agentes"*; the conversation itself can be in any language.
+
+### 1. Pick a mode
+
+| Mode | When to use | Example request |
+|---|---|---|
+| **Evaluate** | You have an idea and want to know if it holds up. Everything happens in one conversation, nothing is scheduled. | *"Usa a arquitetura de agentes para avaliar esta ideia: um site que compara o custo real de comprar um imóvel em cada estado."* |
+| **Run** | You want the project built end to end, with agents working on a schedule while you are away. | *"Usa a arquitetura de agentes e toca o projeto do site de calculadoras. Repositório: `my-user/calculators`."* |
+| **Take over** | The project already exists and you want the agents to continue it without redoing anything. | *"Usa a arquitetura de agentes para assumir este projeto em andamento. Está em `my-user/my-project`."* |
+
+### 2. Answer the spec questions
+
+Before any work starts, the agents write the spec (`ESPEC.md`): goal, ground truth, judging criteria with yes/no questions, gates, constraints, limits and stop criteria. Expect a few direct questions about what you want and how success is measured. You approve the stop criteria; nothing about stopping is decided without you.
+
+If you are not around to answer, the agents take the most reasonable reading, mark every guess as `[SUPOSIÇÃO]` and keep going, so you can correct it later.
+
+### 3. What you get
+
+- **Evaluate:** after each round, a short summary: current version, score (0–100) and confidence, the three weakest points and what would confirm them, and the arbiter's decision on the task.
+- **Run / Take over:** a list of scheduled runs (one per workstream, plus the daily report, the weekly continuity review and, on Claude, the watchdog). The agents show it before creating anything, unless you told them to go ahead. After that, work continues on its own and you get a daily report.
+
+You will need a private GitHub repository for **Run** and **Take over**, because each scheduled run starts fresh and reads the project state from files. Create an empty one and give the agents its name; some platforms cannot create repositories themselves.
+
+### 4. Where to look
+
+| File | What it tells you |
+|---|---|
+| `STATUS.md` | Tasks per workstream and which ones are approved. |
+| `PENDENTE_USUARIO.md` | Everything waiting for you. Check this first. |
+| `ALERTA_CONTINUIDADE.md` | Alerts from agents that think the project, or part of it, may not be worth continuing. |
+| `DECISOES_ARBITRO.md` | Each gate decision on a task, with the full reasoning, so you can agree or disagree. |
+| `DECISOES.md` | Your own decisions and the reasons behind every choice. |
+| `ABLACAO.md` | Which features stayed and which were dropped, based on measured gains. |
+
+### 5. Answering a continuity alert
+
+When an agent finds a reason the project may not be worth it, it opens an alert with what it saw, sourced evidence, cost so far, options and a recommendation, and pauses only the affected workstream. Reply in the conversation (or write your answer in `STATUS.md`) with one of:
+
+- **continue** — the workstream resumes;
+- **adjust scope** or **pivot** — the spec is updated first, then work resumes;
+- **pause** — it stays paused until you say otherwise;
+- **stop** — the final review runs and the scheduled runs are paused.
+
+Your decision and reason are recorded in `DECISOES.md`.
+
+### 6. Steering along the way
+
+- To change anything, tell the agents in the conversation or add a request to `STATUS.md`. Your requests always override the arbiter and the scheduled-run instructions.
+- To disagree with an arbiter decision, say so; the task goes back with your reasoning recorded.
+- Irreversible actions (deleting data, publishing, spending money, contacting anyone) are never done on their own: they wait in `PENDENTE_USUARIO.md` for your approval.
 
 ## Compatibility note
 
