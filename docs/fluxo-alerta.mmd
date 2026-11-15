@@ -1,0 +1,13 @@
+flowchart TD
+    QUALQ["Qualquer agente, em qualquer etapa<br/>pesquisa, código, crítica, juiz, fiscal,<br/>árbitro, relatório, revisão semanal"] -->|"percebe que pode não valer a pena"| AL["Alerta de continuidade<br/>o que viu, evidências com fonte, custo até agora,<br/>opções, recomendação e o que mudaria a opinião"]
+    AL --> PAU["Pausa só a frente afetada<br/>nada é apagado, as outras seguem"]
+    PAU --> USU{"Você decide"}
+    USU -->|continuar| VOLTA["Trava volta a LIVRE"]
+    USU -->|ajustar escopo| ESPEC["Atualiza a ESPEC"]
+    USU -->|pivotar| ESPEC
+    USU -->|pausar| PAUSADO["Fica pausado até você mandar retomar"]
+    USU -->|encerrar| F3["Fase 3 · Revisão final"]
+    VOLTA --> REG["Decisão e motivo em DECISOES.md"]
+    ESPEC --> REG
+    PAUSADO --> REG
+    F3 --> REG

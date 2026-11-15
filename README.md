@@ -19,11 +19,82 @@ The method is identical across versions; only the execution layer changes. Where
 
 ## How it works
 
+The flowcharts below are in Portuguese, like the skill itself. Sources (`.mmd`) and PNG versions are in [`docs/`](docs/).
+
+### 1. Evolution round (one task)
+
+```mermaid
+flowchart TD
+    START(["usa a arquitetura de agentes"]) --> MODO{Modo}
+    MODO -->|"Avaliar / Conduzir"| ESPEC
+    MODO -->|Assumir| A["Fase A · Ler o que já existe<br/>sem refazer nem sobrescrever"] --> ESPEC
+    ESPEC["Fase 0 · ESPEC<br/>objetivo, gabarito, critérios do juiz, portões,<br/>limites e critérios de parada aprovados por você"] --> EST
+
+    subgraph R["Fase 1 · Rodada de evolução (uma tarefa)"]
+        EST["Estruturador · V0 + hipóteses"] --> PES["Pesquisador · evidência com fonte"]
+        PES --> CON["Construtor · nova versão + testes"]
+        CON --> CRI["Crítico · falhas testáveis"]
+        CRI --> VER["Verificação · só críticas confirmadas"]
+        VER --> JUI["Juiz · régua 0 a 4, nota calculada em código"]
+        JUI --> FIS{"Fiscal isolado<br/>só vê ESPEC + entrega"}
+    end
+
+    FIS -->|"reprovado, até 3x"| CON
+    FIS -->|aprovado| ARB{"Árbitro<br/>portão da tarefa"}
+    ARB -->|REFAZER| CON
+    ARB -->|TESTAR| EXP["Experimento real"]
+    EXP --> PES
+    ARB -->|APROVAR| INT["Integra no principal<br/>STATUS: tarefa aprovada"]
+    INT --> FIM{"Critério de<br/>término atingido?"}
+    FIM -->|"não: próxima tarefa"| PES
+    FIM -->|sim| F3["Fase 3 · Revisão final independente<br/>pausa as execuções agendadas"]
 ```
-Spec  ->  Structurer -> Researcher -> Builder -> Critic -> Verification -> Judge -> Reviewer -> Arbiter
-                                                                                        |
-                                    next round / test / pivot / approve / discard  <----+
+
+### 2. Continuity alert: agents recommend, only the human decides
+
+```mermaid
+flowchart TD
+    QUALQ["Qualquer agente, em qualquer etapa<br/>pesquisa, código, crítica, juiz, fiscal,<br/>árbitro, relatório, revisão semanal"] -->|"percebe que pode não valer a pena"| AL["Alerta de continuidade<br/>o que viu, evidências com fonte, custo até agora,<br/>opções, recomendação e o que mudaria a opinião"]
+    AL --> PAU["Pausa só a frente afetada<br/>nada é apagado, as outras seguem"]
+    PAU --> USU{"Você decide"}
+    USU -->|continuar| VOLTA["Trava volta a LIVRE"]
+    USU -->|ajustar escopo| ESPEC["Atualiza a ESPEC"]
+    USU -->|pivotar| ESPEC
+    USU -->|pausar| PAUSADO["Fica pausado até você mandar retomar"]
+    USU -->|encerrar| F3["Fase 3 · Revisão final"]
+    VOLTA --> REG["Decisão e motivo em DECISOES.md"]
+    ESPEC --> REG
+    PAUSADO --> REG
+    F3 --> REG
 ```
+
+### 3. Parallel execution
+
+```mermaid
+flowchart LR
+    subgraph AG["Execuções agendadas"]
+        FA["Frente A<br/>a cada hora"]
+        FB["Frente B<br/>a cada hora"]
+        FC["Frente C<br/>a cada hora"]
+        VIG["Vigia<br/>várias vezes por hora<br/>(versão Claude)"]
+        REL["Relatório diário"]
+        REV["Revisão de continuidade<br/>semanal"]
+    end
+
+    subgraph REPO["Repositório privado do projeto"]
+        ARQ["ESPEC · STATUS · DECISOES<br/>ALERTA_CONTINUIDADE · ABLACAO<br/>uma trava por frente"]
+    end
+
+    FA -->|"trava + sinal de vida a cada 10 min"| ARQ
+    FB -->|"trabalha no próprio ramo"| ARQ
+    FC -->|"espera etapa aprovada de outra frente"| ARQ
+    VIG -->|"trava parada há mais de 20 min:<br/>libera e dispara a frente de novo"| FA
+    ARQ -->|"pendências e alertas"| VOCE(["Você"])
+    REL -->|"progresso, notas, decisões do árbitro"| VOCE
+    REV -->|"abre alerta se houver motivo"| VOCE
+    VOCE -->|"suas decisões valem sobre o árbitro"| ARQ
+```
+
 
 | Role | What it does |
 |---|---|

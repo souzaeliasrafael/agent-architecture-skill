@@ -1,0 +1,24 @@
+flowchart TD
+    START(["usa a arquitetura de agentes"]) --> MODO{Modo}
+    MODO -->|"Avaliar / Conduzir"| ESPEC
+    MODO -->|Assumir| A["Fase A · Ler o que já existe<br/>sem refazer nem sobrescrever"] --> ESPEC
+    ESPEC["Fase 0 · ESPEC<br/>objetivo, gabarito, critérios do juiz, portões,<br/>limites e critérios de parada aprovados por você"] --> EST
+
+    subgraph R["Fase 1 · Rodada de evolução (uma tarefa)"]
+        EST["Estruturador · V0 + hipóteses"] --> PES["Pesquisador · evidência com fonte"]
+        PES --> CON["Construtor · nova versão + testes"]
+        CON --> CRI["Crítico · falhas testáveis"]
+        CRI --> VER["Verificação · só críticas confirmadas"]
+        VER --> JUI["Juiz · régua 0 a 4, nota calculada em código"]
+        JUI --> FIS{"Fiscal isolado<br/>só vê ESPEC + entrega"}
+    end
+
+    FIS -->|"reprovado, até 3x"| CON
+    FIS -->|aprovado| ARB{"Árbitro<br/>portão da tarefa"}
+    ARB -->|REFAZER| CON
+    ARB -->|TESTAR| EXP["Experimento real"]
+    EXP --> PES
+    ARB -->|APROVAR| INT["Integra no principal<br/>STATUS: tarefa aprovada"]
+    INT --> FIM{"Critério de<br/>término atingido?"}
+    FIM -->|"não: próxima tarefa"| PES
+    FIM -->|sim| F3["Fase 3 · Revisão final independente<br/>pausa as execuções agendadas"]
